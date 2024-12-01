@@ -4,6 +4,8 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
+src/*/kotlin/aoc2015
+
 aoc_cookie
 
 ### IntelliJ IDEA ###
