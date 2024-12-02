@@ -10,9 +10,11 @@ private const val YEAR = 2024
 private const val INPUT_FILE = "input"
 
 fun readDayFile(day: Int, fileName: String): File {
-    val file = File("src/main/kotlin/day$day/$fileName")
+    val directory = "src/main/resources/inputs/$YEAR/day$day"
+    val file = File("$directory/$fileName")
 
     if (!file.exists() && fileName == INPUT_FILE) {
+        File(directory).mkdirs()
         downloadInputFile(day, file)
     }
 
