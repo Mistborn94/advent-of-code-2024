@@ -9,15 +9,12 @@ fun solveA(text: String, debug: Debug = Debug.Disabled): Int {
     return left.sorted().zip(right.sorted()).sumOf { (l, r) -> abs(l - r) }
 }
 
-private fun parseInput(text: String): Pair<MutableList<Int>, MutableList<Int>> {
-    val left = mutableListOf<Int>()
-    val right = mutableListOf<Int>()
-    val regex = " +".toRegex()
-    text.trim().lines().map { it.split(regex) }.forEach { (l, r) ->
-        left.add(l.toInt())
-        right.add(r.toInt())
-    }
-    return Pair(left, right)
+private fun parseInput(text: String): Pair<List<Int>, List<Int>> {
+    return text.lines().map {
+        val left = it.substringBefore(" ").toInt()
+        val right = it.substringAfterLast(" ").toInt()
+        left to right
+    }.unzip()
 }
 
 
