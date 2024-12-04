@@ -14,8 +14,8 @@ internal class DayTKtTest {
     @Test
     fun sample1() {
         val text = """
-            |
-        """.trimMargin().trimEnd()
+        
+        """.trimIndent().trimEnd()
 
         assertEquals(0, solveA(text, Debug.Enabled))
         assertEquals(0, solveB(text, Debug.Enabled))
@@ -28,7 +28,7 @@ internal class DayTKtTest {
 
         val text = """
             |
-        """.trimMargin().trimEnd()
+        """.trimIndent().trimEnd()
 
         assertEquals(0, solveA(text, Debug.Enabled))
         assertEquals(0, solveB(text, Debug.Disabled))
