@@ -1,95 +1,34 @@
 package day4
 
 import helper.Debug
-import helper.point.base.Point
-import helper.point.base.contains
-import helper.point.base.get
-
-val word = "XMAS".toRegex()
-val reversed = "XMAS".reversed().toRegex()
 
 fun solveA(text: String, debug: Debug = Debug.Disabled): Int {
     val lines = text.lines()
-    val rowCount = findWords(lines)
-    val columns = buildColumns(lines)
-    val columnCount = findWords(columns)
+    val rRange = 0..lines.lastIndex
+    val cRange = 0..lines[0].lastIndex
+    return rRange.sumOf { r ->
+        cRange.sumOf { c ->
+            val h = if (c + 3 in cRange) "${lines[r][c]}${lines[r][c + 1]}${lines[r][c + 2]}${lines[r][c + 3]}" else ""
+            val v = if (r + 3 in rRange) "${lines[r][c]}${lines[r + 1][c]}${lines[r + 2][c]}${lines[r + 3][c]}" else ""
+            val tlbr =
+                if (c + 3 in cRange && r + 3 in rRange) "${lines[r][c]}${lines[r + 1][c + 1]}${lines[r + 2][c + 2]}${lines[r + 3][c + 3]}" else ""
+            val bltr =
+                if (c + 3 in cRange && r + 3 in rRange) "${lines[r + 3][c]}${lines[r + 2][c + 1]}${lines[r + 1][c + 2]}${lines[r][c + 3]}" else ""
 
-    val diag1 = diagonalDownRightPoints(lines).map {
-        it.joinToString(separator = "") { p -> lines[p].toString() }
-    }
-    val diag2 = diagonalDownLeftPoints(lines).map {
-        it.joinToString(separator = "") { p -> lines[p].toString() }
-    }
-
-    val diag1Count = findWords(diag1)
-    val diag2Count = findWords(diag2)
-
-    debug {
-        println("Counts")
-        println("Rows: $rowCount")
-        println("Colums: $columnCount")
-        println("Diagonals: $diag1Count")
-        println("Diagonals: $diag2Count")
-    }
-
-    return rowCount + columnCount + diag1Count + diag2Count
-}
-
-private fun diagonalDownLeftPoints(lines: List<String>) = buildSet {
-    this.addAll(lines[0].indices.map { Point(it, 0) })
-    this.addAll(lines.indices.map { Point(lines[0].lastIndex, it) })
-}.map {
-    var pos = it
-    buildList {
-        while (pos in lines) {
-            add(pos)
-            pos += Point(-1, 1)
+            listOf(h, v, tlbr, bltr).count { it == "XMAS" || it == "SAMX" }
         }
     }
-}
-
-private fun diagonalDownRightPoints(lines: List<String>) = buildSet {
-    this.addAll(lines.indices.map { Point(it, 0) })
-    this.addAll(lines[0].indices.map { Point(0, it) })
-}.map {
-    var pos = it
-    buildList {
-        while (pos in lines) {
-            add(pos)
-            pos += Point(1, 1)
-        }
-    }
-}
-
-private fun findWords(lines: List<String>) = lines.sumOf {
-    word.findAll(it).count() + reversed.findAll(it).count()
 }
 
 fun solveB(text: String, debug: Debug = Debug.Disabled): Int {
     val lines = text.lines()
+    return (1..<lines.lastIndex).sumOf { r ->
+        (1..<lines[0].lastIndex).count { c ->
+            val tlbr = "${lines[r - 1][c - 1]}${lines[r][c]}${lines[r + 1][c + 1]}"
+            val bltr = "${lines[r - 1][c + 1]}${lines[r][c]}${lines[r + 1][c - 1]}"
 
-    val diagonalDownRightPoints = diagonalDownRightPoints(lines)
-    val diagonalDownLeftPoints = diagonalDownLeftPoints(lines)
-
-    val diag1Points = findWordLocations(lines, diagonalDownRightPoints)
-    val diag2Points = findWordLocations(lines, diagonalDownLeftPoints)
-
-    return diag1Points.intersect(diag2Points).size
-}
-
-private fun buildColumns(lines: List<String>): List<String> = buildList {
-    for (i in lines[0].indices) {
-        add(buildString {
-            for (line in lines) {
-                append(line[i])
-            }
-        })
+            (tlbr == "MAS" || tlbr == "SAM") && (bltr == "MAS" || bltr == "SAM")
+        }
     }
 }
 
-private fun findWordLocations(lines: List<String>, points: List<List<Point>>) =
-    points.flatMapTo(mutableSetOf()) {
-        it.windowed(3).filter { (a, b, c) ->
-            lines[b] == 'A' && ((lines[a] == 'M' && lines[c] == 'S') || (lines[a] == 'S' && lines[c] == 'M'))
-        }.map { (_, b, _) -> b }
-    }
