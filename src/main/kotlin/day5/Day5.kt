@@ -8,25 +8,17 @@ fun solveA(text: String, debug: Debug = Debug.Disabled): Int {
     val rules = parseRules(rulesText.lines())
 
     return updates.lines().sumOf { line ->
-        val ints = line.split(",").map { it.toInt() }
-        if (isInOrder(ints, rules)) {
-            ints[ints.size / 2]
+        val pages = line.split(",").map { it.toInt() }
+        if (isInOrder(pages, rules)) {
+            pages[pages.size / 2]
         } else {
             0
         }
     }
 }
 
-private fun parseRules(rulesLines: List<String>): Map<Int, List<Int>> {
-    val rules = mutableMapOf<Int, MutableList<Int>>()
-
-    rulesLines.forEach { line ->
-        val (first, second) = line.split("|").map { it.toInt() }
-
-        rules.getOrPut(first) { mutableListOf() }.add(second)
-    }
-    return rules
-}
+private fun parseRules(rulesLines: List<String>): Map<Int, List<Int>> =
+    rulesLines.map { line -> line.split("|").map(String::toInt) }.groupBy({ it[0] }, { it[1] })
 
 fun isInOrder(ints: List<Int>, rules: Map<Int, List<Int>>): Boolean {
     return ints.indices.drop(0).all { page ->
@@ -55,20 +47,7 @@ fun solveB(text: String, debug: Debug = Debug.Disabled): Int {
     }
 }
 
-fun sortPages(ints: List<Int>, rules: Map<Int, List<Int>>): List<Int> {
-    val unsorted = ints.toMutableList()
-    val sorted = mutableListOf<Int>()
-    while (unsorted.isNotEmpty()) {
-        val next = unsorted.removeAt(0)
-        val afterNext = rules[next] ?: emptyList()
-
-        val index = sorted.indexOfFirst { it in afterNext }
-        if (index == -1) {
-            sorted.add(next)
-        } else {
-            sorted.add(index, next)
-        }
-    }
-
-    return sorted
+fun sortPages(pages: List<Int>, rules: Map<Int, List<Int>>): List<Int> {
+    val ruleCounts = pages.associateWith { page -> (rules[page] ?: emptyList()).count { it in pages } }
+    return pages.sortedWith(compareBy { ruleCounts[it] ?: 0 })
 }
