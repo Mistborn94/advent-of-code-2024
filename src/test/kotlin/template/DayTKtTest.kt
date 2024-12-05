@@ -27,7 +27,7 @@ internal class DayTKtTest {
 //        val text = readDayFile(day, "sample2.in").readText().trimEnd()
 
         val text = """
-            |
+        
         """.trimIndent().trimEnd()
 
         assertEquals(0, solveA(text, Debug.Enabled))
