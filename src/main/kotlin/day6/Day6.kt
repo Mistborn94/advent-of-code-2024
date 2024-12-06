@@ -9,7 +9,7 @@ import helper.point.base.indexOf
 
 fun solveA(text: String, debug: Debug = Debug.Disabled): Int {
     val grid = text.lines()
-    val visited = getVisited(grid.indexOf('^'), grid)
+    val visited = walk(grid.indexOf('^'), grid)!!
 
     debug {
         printGrid(grid, visited)
@@ -18,22 +18,32 @@ fun solveA(text: String, debug: Debug = Debug.Disabled): Int {
     return visited.size
 }
 
-private fun getVisited(start: Point, grid: List<String>): Set<Point> {
+fun solveB(text: String, debug: Debug = Debug.Disabled): Int {
+    val grid = text.lines()
+    val start = grid.indexOf('^')
+    val possibleObstacles = walk(start, grid)!!
+    return possibleObstacles.count {
+        it != start && walk(start, grid, it) == null
+    }
+}
+
+private fun walk(start: Point, grid: List<String>, obstacle: Point? = null): Set<Point>? {
     var position = start
     var direction = Direction.UP
-    val visited = mutableSetOf<Point>()
+    val visited = mutableSetOf<Pair<Point, Direction>>()
 
-    while (position in grid) {
-        visited.add(position)
+    var loop = false
+    while (position in grid && !loop) {
+        loop = !visited.add(position to direction)
 
         val nextStraight = position + direction.point
-        if (nextStraight !in grid || grid[nextStraight] != '#') {
-            position = nextStraight
-        } else {
+        if (nextStraight in grid && (grid[nextStraight] == '#' || nextStraight == obstacle)) {
             direction = direction.right
+        } else {
+            position = nextStraight
         }
     }
-    return visited
+    return if (loop) null else visited.mapTo(mutableSetOf()) { it.first }
 }
 
 private fun printGrid(grid: List<String>, visited: Set<Point>, possibleObstructions: Set<Point> = emptySet()) {
@@ -49,32 +59,3 @@ private fun printGrid(grid: List<String>, visited: Set<Point>, possibleObstructi
     }.joinToString(separator = "\n"))
 }
 
-
-fun solveB(text: String, debug: Debug = Debug.Disabled): Int {
-    val grid = text.lines()
-    val start = grid.indexOf('^')
-    val possibleObstacles = getVisited(start, grid)
-    return possibleObstacles.count {
-        it != start && loopIfObstacle(grid, start, it)
-    }
-}
-
-fun loopIfObstacle(grid: List<String>, start: Point, obstacle: Point): Boolean {
-    var pos = start
-    var direction = Direction.UP
-    var loop = false
-    val visited = mutableSetOf<Pair<Point, Direction>>()
-    while (pos in grid && !loop) {
-        loop = !visited.add(pos to direction)
-
-        val nextStraight = pos + direction.point
-
-        if (nextStraight in grid && (grid[nextStraight] == '#' || nextStraight == obstacle)) {
-            direction = direction.right
-        } else {
-            pos = nextStraight
-        }
-    }
-
-    return loop
-}
