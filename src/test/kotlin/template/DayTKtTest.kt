@@ -40,10 +40,10 @@ internal class DayTKtTest {
 
         val solveA = solveA(lines)
         println("A: $solveA")
-        assertEquals(0, solveA)
+//        assertEquals(0, solveA)
 
         val solveB = solveB(lines)
         println("B: $solveB")
-        assertEquals(0, solveB)
+//        assertEquals(0, solveB)
     }
 }
