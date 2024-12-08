@@ -1,5 +1,8 @@
 package helper.point.base
 
+import helper.pow
+import kotlin.math.sqrt
+
 data class Point(val x: Int, val y: Int) : Comparable<Point> {
 
     fun abs() = kotlin.math.abs(x) + kotlin.math.abs(y)
@@ -60,6 +63,12 @@ data class Point(val x: Int, val y: Int) : Comparable<Point> {
             yComp
         }
     }
+
+    fun euclideanDistance(other: Point): Double = sqrt(
+        ((x - other.x).pow(2) + (y - other.y).pow(2)).toDouble()
+    )
+
+    fun slopeTo(b: Point) = if (x == b.x) null else (y - b.y).toDouble() / (x - b.x).toDouble()
 }
 
 
