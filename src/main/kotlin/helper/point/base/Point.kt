@@ -64,6 +64,8 @@ data class Point(val x: Int, val y: Int) : Comparable<Point> {
         }
     }
 
+    fun manhattanDistance(other: Point): Int = (this - other).abs()
+
     fun euclideanDistance(other: Point): Double = sqrt(
         ((x - other.x).pow(2) + (y - other.y).pow(2)).toDouble()
     )
