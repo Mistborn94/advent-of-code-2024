@@ -10,14 +10,13 @@ fun solveA(text: String, debug: Debug = Debug.Disabled): Long {
                 val fileId = index / 2
                 repeat(digitValue) { add(fileId) }
             } else {
-
                 repeat(digitValue) { add(null) }
             }
         }
     }.toMutableList()
 
     debug {
-        println(printFs(fileSystem))
+        println(print(fileSystem))
     }
 
     var firstNull = fileSystem.indexOf(null)
@@ -31,74 +30,75 @@ fun solveA(text: String, debug: Debug = Debug.Disabled): Long {
         lastNonNull = fileSystem.indexOfLast { it != null }
 
         debug {
-            println(printFs(fileSystem))
+            println(print(fileSystem))
         }
     }
 
     debug {
-        println(printFs(fileSystem))
+        println(print(fileSystem))
     }
 
-    return checksum(fileSystem)
+    return fileSystem.mapIndexed { index, file -> if (file == null) 0 else index.toLong() * file }.sum()
 }
 
-private fun checksum(fileSystem: MutableList<Int?>) =
-    fileSystem.mapIndexed { index, file -> if (file == null) 0 else index.toLong() * file }.sum()
-
-private fun printFs(fileSystem: MutableList<Int?>) =
+private fun print(fileSystem: List<Int?>) =
     fileSystem.joinToString(separator = "") { if (it == null) "." else "$it" }
 
+data class File(val id: Int, val start: Int, val size: Int) {
+    val end = start + size
+
+    val checksum = (start..<end).sumOf { it * id.toLong() }
+}
 
 fun solveB(text: String, debug: Debug = Debug.Disabled): Long {
     val digits = text.toList().map { it.digitToInt() }
+
     //File id to size
-    val files = digits.mapIndexedNotNull { index, size -> if (index % 2 == 0) index / 2 to size else null }
-    //size to next file
-    val freeSpace =
-        digits.mapIndexedNotNull { index, size -> if (index % 2 == 0) null else size to (index / 2 + 1) }
-            .toMutableList()
-
-    val fileSystem = text.toList().flatMapIndexed { index, digit ->
-        buildList {
-            val digitValue = digit.digitToInt()
-            if (index % 2 == 0) {
-                val fileId = index / 2
-                repeat(digitValue) { add(fileId) }
-            } else {
-                repeat(digitValue) { add(null) }
-            }
+    val files = digits.drop(1).windowed(2, 2)
+        .runningFoldIndexed(File(0, 0, digits[0])) { index, prev, (blankSize, fileSize) ->
+            File(index + 1, prev.end + blankSize, fileSize)
         }
-    }.toMutableList()
+        .toMutableList()
 
-    files.reversed().forEach { (fileId, fileSize) ->
-        val possibleSpace =
-            freeSpace.takeWhile { (_, next) -> next <= fileId }.firstOrNull { (spaceSize, _) -> spaceSize >= fileSize }
+    debug {
+        println("S: ${printFiles(files)}")
+    }
+
+    files.reversed().forEach { file ->
+        val possibleSpace = files.takeWhile { it.start <= file.start }
+            .zipWithNext()
+            .firstOrNull { (a, b) -> file.size <= (b.start - a.end) }
 
         if (possibleSpace != null) {
-            val freeSpaceIndex = freeSpace.indexOf(possibleSpace)
-            freeSpace.remove(possibleSpace)
-            val (spaceSize, nextFile) = possibleSpace
+            val (before, after) = possibleSpace
+            val index = files.indexOf(after)
+            files.remove(file)
+            files.add(index, file.copy(start = before.end))
 
-            val currentPosition = fileSystem.indexOf(fileId)
-            val newPosition = fileSystem.indexOf(nextFile) - spaceSize
-            repeat(fileSize) {
-                fileSystem[currentPosition + it] = null
-                fileSystem[newPosition + it] = fileId
+            debug {
+                println("${file.id}: ${printFiles(files)}")
             }
-
-            if (spaceSize > fileSize) {
-                freeSpace.add(freeSpaceIndex, (spaceSize - fileSize) to nextFile)
-            }
-        }
-
-        debug {
-            println("$fileId: ${printFs(fileSystem)}")
         }
     }
 
     debug {
-        println(printFs(fileSystem))
+        println("E: ${printFiles(files)}")
     }
 
-    return checksum(fileSystem)
+    return files.sumOf { it.checksum }
+}
+
+fun printFiles(files: List<File>): String {
+    var prev = 0
+    return buildString {
+        files.forEach { file ->
+            repeat(file.start - prev) {
+                append('.')
+            }
+            repeat(file.size) {
+                append(file.id)
+            }
+            prev = file.end
+        }
+    }
 }

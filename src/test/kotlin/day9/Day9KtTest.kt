@@ -21,6 +21,15 @@ internal class Day9KtTest {
     }
 
     @Test
+    fun sample2() {
+        val text = """
+        111
+        """.trimIndent().trimEnd()
+
+        assertEquals(1, solveB(text, Debug.Enabled))
+    }
+
+    @Test
     fun solve() {
         val lines = readDayFile(day, "input").readText().trimEnd()
 
