@@ -10,17 +10,15 @@ fun solveA(text: String, debug: Debug = Debug.Disabled): Int {
     val map = text.lines().map { line -> line.map { it.digitToInt() } }
     val heads = map.points().filter { map[it] == 0 }
 
-    return heads.sumOf { head -> endLocations(map, head, mutableMapOf()).size }
+    return heads.sumOf { head -> endLocations(map, head).size }
 }
 
-fun endLocations(map: List<List<Int>>, head: Point, cache: MutableMap<Point, Set<Point>>): Set<Point> {
+fun endLocations(map: List<List<Int>>, head: Point): Set<Point> {
     return if (map[head] == 9) {
         setOf(head)
     } else {
-        cache.getOrPut(head) {
-            head.neighbours().filter { n -> n in map && map[n] - map[head] == 1 }
-                .flatMapTo(mutableSetOf()) { n -> endLocations(map, n, cache) }
-        }
+        head.neighbours().filter { n -> n in map && map[n] - map[head] == 1 }
+            .flatMapTo(mutableSetOf()) { n -> endLocations(map, n) }
     }
 }
 
@@ -28,16 +26,14 @@ fun solveB(text: String, debug: Debug = Debug.Disabled): Int {
     val map = text.lines().map { line -> line.map { it.digitToInt() } }
     val heads = map.points().filter { map[it] == 0 }
 
-    return heads.sumOf { head -> rating(map, head, mutableMapOf()) }
+    return heads.sumOf { head -> rating(map, head) }
 }
 
-fun rating(map: List<List<Int>>, head: Point, cache: MutableMap<Point, Int>): Int {
+fun rating(map: List<List<Int>>, head: Point): Int {
     return if (map[head] == 9) {
         1
     } else {
-        cache.getOrPut(head) {
-            head.neighbours().filter { n -> n in map && map[n] - map[head] == 1 }
-                .sumOf { n -> rating(map, n, cache) }
-        }
+        head.neighbours().filter { n -> n in map && map[n] - map[head] == 1 }
+            .sumOf { n -> rating(map, n) }
     }
 }
