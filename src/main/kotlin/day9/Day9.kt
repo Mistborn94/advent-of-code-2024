@@ -53,7 +53,6 @@ data class File(val id: Int, val start: Int, val size: Int) {
 fun solveB(text: String, debug: Debug = Debug.Disabled): Long {
     val digits = text.toList().map { it.digitToInt() }
 
-    //File id to size
     val files = digits.drop(1).windowed(2, 2)
         .runningFoldIndexed(File(0, 0, digits[0])) { index, prev, (blankSize, fileSize) ->
             File(index + 1, prev.end + blankSize, fileSize)
