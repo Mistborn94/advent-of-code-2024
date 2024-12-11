@@ -4,16 +4,17 @@ import helper.Debug
 
 fun solve(text: String, debug: Debug = Debug.Disabled, reps: Int): Long {
     val list = text.split(" ").map { it.toLong() }
-    val cache = mutableMapOf<Pair<Int, Long>, Long>()
+    val cache = (1..reps).associateWith { mutableMapOf<Long, Long>() }
 
     return list.sumOf { countStones(it, cache, reps) }
 }
 
-fun countStones(stone: Long, cache: MutableMap<Pair<Int, Long>, Long>, rep: Int): Long {
+fun countStones(stone: Long, cache: Map<Int, MutableMap<Long, Long>>, rep: Int): Long {
     return if (rep == 0) {
         1
     } else {
-        cache.getOrPut(rep to stone) {
+        val iterationCache = cache[rep]!!
+        iterationCache.getOrPut(stone) {
             val str = "$stone"
             if (stone == 0L) {
                 countStones(1, cache, rep - 1)
