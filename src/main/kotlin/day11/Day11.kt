@@ -1,9 +1,6 @@
 package day11
 
-import helper.Debug
-
-// Original solution for part 1
-fun solveA(text: String, debug: Debug = Debug.Disabled, reps: Int = 25): Int {
+fun solveA(text: String, reps: Int = 25): Int {
     var list = text.split(" ").map { it.toLong() }
     repeat(reps) {
         list = list.flatMap { stone ->
@@ -25,7 +22,7 @@ fun solveA(text: String, debug: Debug = Debug.Disabled, reps: Int = 25): Int {
     return list.size
 }
 
-fun solve(text: String, debug: Debug = Debug.Disabled, reps: Int): Long {
+fun solve(text: String, reps: Int): Long {
     val list = text.split(" ").map { it.toLong() }
     val cache = (1..reps).associateWith { mutableMapOf<Long, Long>() }
 
