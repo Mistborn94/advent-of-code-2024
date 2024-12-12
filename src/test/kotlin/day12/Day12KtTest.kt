@@ -25,8 +25,6 @@ internal class Day12KtTest {
 
     @Test
     fun sample2() {
-//        val text = readDayFile(day, "sample2.in").readText().trimEnd()
-
         val text = """
         RRRRIICCFF
         RRRRIICCCF

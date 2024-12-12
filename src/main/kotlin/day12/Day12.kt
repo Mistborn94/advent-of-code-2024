@@ -1,6 +1,7 @@
 package day12
 
 import helper.Debug
+import helper.point.Direction
 import helper.point.base.Point
 import helper.point.base.contains
 import helper.point.base.get
@@ -17,44 +18,49 @@ private fun solve(text: String, debug: Debug, b: Boolean): Int {
     var total = 0
     while (toVisit.isNotEmpty()) {
         val start = toVisit.removeFirst()
-        val symbol = map[start]
 
-        val regionToVisit = mutableSetOf(start)
-        val regionPoints = mutableSetOf<Point>()
-        val horizontalEdges = mutableMapOf<Pair<Int, Int>, MutableList<Int>>()
-        val verticalEdges = mutableMapOf<Pair<Int, Int>, MutableList<Int>>()
+        if (start !in visited) {
+            val (area, perimeter, next) = expandRegion(map, start)
+            visited.addAll(area)
+            toVisit.addAll(next)
 
-        while (regionToVisit.isNotEmpty()) {
-            val current = regionToVisit.removeFirst()
-            if (visited.add(current)) {
-                regionPoints.add(current)
-                current.neighbours().forEach { next ->
-                    if (next !in map || map[next] != symbol) {
-                        val d = next - current
-                        if (next.x == current.x) {
-                            horizontalEdges.getOrPut(current.y to d.y) { mutableListOf() }.add(next.x)
-                        } else {
-                            verticalEdges.getOrPut(current.x to d.x) { mutableListOf() }.add(next.y)
-                        }
-                    }
-                    if (next in map) {
-                        if (map[next] != symbol) {
-                            toVisit.add(next)
-                        } else {
-                            regionToVisit.add(next)
-                        }
-                    }
-                }
+            total += if (b) {
+                area.size * perimeter.count { (p, d) -> p + d.right.point to d !in perimeter }
+            } else {
+                area.size * perimeter.size
             }
-        }
-        total += if (b) {
-            regionPoints.size * (horizontalEdges.values.sumOf { it.continuousGroups() } + verticalEdges.values.sumOf { it.continuousGroups() })
-        } else {
-            regionPoints.size * (horizontalEdges.values.sumOf { it.size } + verticalEdges.values.sumOf { it.size })
         }
     }
     return total
 }
 
+private fun expandRegion(
+    map: List<String>,
+    start: Point
+): Triple<Set<Point>, Set<Pair<Point, Direction>>, Set<Point>> {
+    val toVisit = mutableSetOf(start)
+    val otherRegions = mutableSetOf<Point>()
 
-private fun List<Int>.continuousGroups(): Int = sorted().zipWithNext().count { (a, b) -> b - a != 1 } + 1
+    val area = mutableSetOf<Point>()
+    val perimeter = mutableSetOf<Pair<Point, Direction>>()
+
+    while (toVisit.isNotEmpty()) {
+        val current = toVisit.removeFirst()
+        if (area.add(current)) {
+            Direction.entries.forEach { direction ->
+                val next = current + direction.point
+                if (next !in map) {
+                    perimeter.add(current to direction)
+                } else if (map[next] != map[current]) {
+                    perimeter.add(current to direction)
+                    otherRegions.add(next)
+                } else {
+                    toVisit.add(next)
+                }
+            }
+        }
+    }
+    return Triple(area, perimeter, otherRegions)
+}
+
+
