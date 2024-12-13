@@ -102,6 +102,7 @@ class GraphSearchResult<K>(val start: Set<K>, val end: K?, val vertices: Map<K, 
         vertices[vertex]?.cost ?: throw IllegalStateException("Result for $vertex not available")
 
     fun getScore(): Int = end?.let { getScore(it) } ?: throw IllegalStateException("No path found")
+    fun getScoreOrNull(): Int? = end?.let { getScore(it) }
 
     fun getPath() = end?.let { getPath(it, emptyList()) } ?: throw IllegalStateException("No path found")
     fun getPath(end: K) = getPath(end, emptyList())
