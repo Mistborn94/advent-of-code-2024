@@ -1,7 +1,6 @@
 package day13
 
 import helper.Debug
-import kotlin.math.roundToLong
 
 fun solveA(text: String, debug: Debug = Debug.Disabled): Long = text.split("\n\n").sumOf { minimumTokens(it, debug) }
 fun solveB(text: String, debug: Debug = Debug.Disabled): Long =
@@ -17,8 +16,8 @@ fun minimumTokens(block: String, debug: Debug, part2: Boolean = false): Long {
         if (part2) it.toLong() + 10000000000000 else it.toLong()
     }
 
-    val b = ((py - px * ay / ax.toDouble()) / (bY - bX * ay / ax.toDouble())).roundToLong()
-    val a = ((px - b * bX) / ax.toDouble()).roundToLong()
+    val b = (py * ax - px * ay) / (bY * ax - bX * ay)
+    val a = (px - bX * b) / ax
 
     debug {
         println("A: $a, B: $b")
