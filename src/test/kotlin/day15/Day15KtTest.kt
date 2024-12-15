@@ -42,8 +42,6 @@ internal class Day15KtTest {
 
     @Test
     fun sample2() {
-//        val text = readDayFile(day, "sample2.in").readText().trimEnd()
-
         val text = """
         ########
         #..O.O.#
@@ -62,8 +60,6 @@ internal class Day15KtTest {
 
     @Test
     fun sample3() {
-//        val text = readDayFile(day, "sample2.in").readText().trimEnd()
-
         val text = """
         #######
         #...#.#

@@ -11,9 +11,10 @@ import kotlin.collections.component1
 import kotlin.collections.component2
 
 fun solveA(text: String, debug: Debug = Debug.Disabled): Int {
-    val (mapText, instructionsText) = text.split("\n\n")
-    val map = mapText.lines()
-    val instructions = instructionsText.replace("\n", "")
+    val (map, instructions) = text.split("\n\n").let { (first, second) ->
+        first.lines() to second.replace("\n", "")
+    }
+
     val walls = mutableSetOf<Point>()
     val boxes = mutableSetOf<Point>()
     var robot = map.indexOf('@')
@@ -26,31 +27,18 @@ fun solveA(text: String, debug: Debug = Debug.Disabled): Int {
         }
     }
 
-
     instructions.forEach { c ->
-        val direction = when (c) {
-            '<' -> Direction.LEFT
-            '>' -> Direction.RIGHT
-            '^' -> Direction.UP
-            'v' -> Direction.DOWN
-            else -> TODO("Unknown direction $c")
+        val direction = Direction.parse(c)
+        val boxesToMove = mutableSetOf<Point>()
+        var nextPoint = robot + direction.point
+        while (nextPoint in boxes) {
+            boxesToMove.add(nextPoint)
+            nextPoint += direction.point
         }
-
-        val nextPoint = robot + direction.point
-        if (nextPoint !in walls && nextPoint !in boxes) {
-            robot = nextPoint
-        } else {
-            val boxesToMove = mutableSetOf<Point>()
-            var nextBox = nextPoint
-            while (nextBox in boxes) {
-                boxesToMove.add(nextBox)
-                nextBox += direction.point
-            }
-            if (nextBox !in walls) {
-                boxes.removeAll(boxesToMove)
-                boxes.addAll(boxesToMove.map { it + direction.point })
-                robot = nextPoint
-            }
+        if (nextPoint !in walls) {
+            boxes.removeAll(boxesToMove)
+            boxes.addAll(boxesToMove.map { it + direction.point })
+            robot += direction.point
         }
     }
 
@@ -59,11 +47,12 @@ fun solveA(text: String, debug: Debug = Debug.Disabled): Int {
 
 
 fun solveB(text: String, debug: Debug = Debug.Disabled): Int {
-    val (mapText, instructionsText) = text.split("\n\n")
-    val map = mapText.lines()
+    val (map, instructions) = text.split("\n\n").let { (first, second) ->
+        first.lines() to second.replace("\n", "")
+    }
+
     val width = map[0].length * 2
     val height = map.size
-    val instructions = instructionsText.replace("\n", "")
     val walls = mutableSetOf<Point>()
     val boxes = mutableSetOf<Pair<Point, Point>>()
 
@@ -91,18 +80,14 @@ fun solveB(text: String, debug: Debug = Debug.Disabled): Int {
     }
 
     instructions.forEachIndexed { i, c ->
-        val direction = when (c) {
-            '<' -> Direction.LEFT
-            '>' -> Direction.RIGHT
-            '^' -> Direction.UP
-            'v' -> Direction.DOWN
-            else -> throw IllegalArgumentException("Unknown direction $c")
-        }
+        val direction = Direction.parse(c)
 
         val boxesToMove = mutableSetOf<Pair<Point, Point>>()
-        val pointsToVisit = mutableSetOf(robot + direction.point)
-        while (pointsToVisit.isNotEmpty() && pointsToVisit.first() !in walls) {
-            val nextBoxPoint = pointsToVisit.removeFirst()
+        val boxPointsToVisit = mutableSetOf(robot + direction.point)
+        while (boxPointsToVisit.isNotEmpty() && boxPointsToVisit.first() !in walls) {
+            val nextBoxPoint = boxPointsToVisit.removeFirst()
+            //For left and right only one of these is possible.
+            //But for the sake of simplicity, we just search for both
             val possibleBoxes = setOf(
                 Pair(nextBoxPoint + Direction.LEFT.point, nextBoxPoint),
                 Pair(nextBoxPoint, nextBoxPoint + Direction.RIGHT.point)
@@ -112,16 +97,16 @@ fun solveB(text: String, debug: Debug = Debug.Disabled): Int {
                 boxesToMove.add(box)
                 when (direction) {
                     Direction.UP, Direction.DOWN -> {
-                        pointsToVisit.add(box.first + direction.point)
-                        pointsToVisit.add(box.second + direction.point)
+                        boxPointsToVisit.add(box.first + direction.point)
+                        boxPointsToVisit.add(box.second + direction.point)
                     }
 
-                    Direction.LEFT -> pointsToVisit.add(box.first + direction.point)
-                    else -> pointsToVisit.add(box.second + direction.point)
+                    Direction.LEFT -> boxPointsToVisit.add(box.first + direction.point)
+                    else -> boxPointsToVisit.add(box.second + direction.point)
                 }
             }
         }
-        if (pointsToVisit.none { it in walls }) {
+        if (boxPointsToVisit.none { it in walls }) {
             boxes.removeAll(boxesToMove)
             boxes.addAll(boxesToMove.map { (first, second) -> first + direction.point to second + direction.point })
             robot += direction.point

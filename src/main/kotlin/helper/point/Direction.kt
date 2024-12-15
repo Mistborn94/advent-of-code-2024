@@ -47,6 +47,15 @@ enum class Direction(val char: Char, val orientation: Orientation) {
         val EAST = RIGHT
         val SOUTH = DOWN
         val WEST = LEFT
+
+        fun parse(c: Char) = when (c) {
+            '<' -> Direction.LEFT
+            '>' -> Direction.RIGHT
+            '^' -> Direction.UP
+            'v' -> Direction.DOWN
+            else -> throw IllegalArgumentException("Unknown direction $c")
+        }
+
     }
 }
 
