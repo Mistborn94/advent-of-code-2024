@@ -33,7 +33,7 @@ fun <K> findShortestPathByPredicate(
 
     while (endVertex == null) {
         if (toVisit.isEmpty()) {
-            return GraphSearchResult(start, null, seenPoints)
+            break
         }
 
         val (currentVertex, currentScore) = toVisit.remove()
