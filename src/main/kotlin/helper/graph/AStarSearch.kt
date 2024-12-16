@@ -2,6 +2,7 @@ package helper.graph
 
 import java.util.*
 
+typealias NeighbourAndCostFunction<T> = (T) -> Iterable<Pair<T, Int>>
 typealias NeighbourFunction<T> = (T) -> Iterable<T>
 typealias CostFunction<T> = (T, T) -> Int
 typealias HeuristicFunction<T> = (T) -> Int
@@ -9,99 +10,66 @@ typealias HeuristicFunction<T> = (T) -> Int
 /**
  * Implements A* search to find the shortest path between two vertices
  */
-fun <T> findShortestPath(
-    start: T,
-    end: T,
-    neighbours: NeighbourFunction<T>,
-    cost: CostFunction<T> = { _, _ -> 1 },
-    heuristic: HeuristicFunction<T> = { 0 }
-): GraphSearchResult<T> = findShortestPathByPredicate(start, { it == end }, neighbours, cost, heuristic)
-
-/**
- * Implements A* search to find the shortest path between two vertices using a predicate to determine the ending vertex
- */
 fun <T> findShortestPathByPredicate(
     start: T,
     endPredicate: (T) -> Boolean,
     neighbours: NeighbourFunction<T>,
     cost: CostFunction<T> = { _, _ -> 1 },
     heuristic: HeuristicFunction<T> = { 0 }
+): GraphSearchResult<T> =
+    shortestPath(listOf(ScoredVertex(start, 0, heuristic(start))), endPredicate, neighbours, cost, heuristic)
+
+/**
+ * Implements dijkstra to get the shortest path from a starting vertex to all reachable vertices
+ */
+fun <T> shortestPathToAll(
+    start: T,
+    neighbours: NeighbourFunction<T>,
+    cost: CostFunction<T> = { _, _ -> 1 }
+): GraphSearchResult<T> = shortestPath(listOf(ScoredVertex(start, 0, 0)), { false }, neighbours, cost)
+
+fun <T> shortestPathToAllFromMultiple(
+    start: Map<T, Int>,
+    neighbours: NeighbourFunction<T>,
+    cost: CostFunction<T> = { _, _ -> 1 },
+): GraphSearchResult<T> = shortestPath(start.map { (k, v) -> ScoredVertex(k, v, 0) }, { false }, neighbours, cost)
+
+/**
+ * Actual shortest path implementation
+ */
+private fun <T> shortestPath(
+    initialToVisit: List<ScoredVertex<T>>,
+    endPredicate: (T) -> Boolean,
+    neighbours: NeighbourFunction<T>,
+    cost: CostFunction<T>,
+    heuristic: HeuristicFunction<T> = { 0 },
 ): GraphSearchResult<T> {
-    val toVisit = PriorityQueue(listOf(ScoredVertex(start, 0, heuristic(start))))
-    var endVertex: T? = null
-
+    val toVisit = PriorityQueue(initialToVisit)
+    val seenPoints: MutableMap<T, SeenVertex<T>> =
+        initialToVisit.associateTo(mutableMapOf()) { (vertex, score) -> vertex to SeenVertex(score, null) }
     val possiblePaths = mutableMapOf<T, MutableSet<T>>()
-    val seenPoints: MutableMap<T, SeenVertex<T>> = mutableMapOf(start to SeenVertex(0, null))
 
-    while (endVertex == null) {
-        if (toVisit.isEmpty()) {
-            break
-        }
-
+    var endVertex: T? = null
+    while (endVertex == null && toVisit.isNotEmpty()) {
         val (currentVertex, currentCost) = toVisit.remove()
         endVertex = if (endPredicate(currentVertex)) currentVertex else null
 
         neighbours(currentVertex).forEach { next ->
             val nextCost = currentCost + cost(currentVertex, next)
-            val seenVertex = seenPoints[next]
-            if (seenVertex != null) {
-                val bestCost = seenVertex.cost
-                if (nextCost < bestCost) {
-                    possiblePaths[next] = mutableSetOf(currentVertex)
-                } else if (nextCost == bestCost) {
-                    possiblePaths[next]!!.add(currentVertex)
-                }
-            } else {
+            val heuristicCost = heuristic(next)
+            val bestCost = seenPoints[next]?.cost ?: Int.MAX_VALUE
+
+            if (nextCost < bestCost) {
                 possiblePaths[next] = mutableSetOf(currentVertex)
-                toVisit.add(ScoredVertex(next, nextCost, heuristic(next)))
                 seenPoints[next] = SeenVertex(nextCost, currentVertex)
+                toVisit.add(ScoredVertex(next, nextCost, heuristicCost))
+            } else if (nextCost == bestCost) {
+                possiblePaths[next]!!.add(currentVertex)
             }
         }
     }
-
-    return GraphSearchResult(setOf(start), endVertex, seenPoints, possiblePaths)
-}
-
-fun <T> shortestPathToAll(
-    start: T,
-    neighbours: NeighbourFunction<T>,
-    cost: CostFunction<T> = { _, _ -> 1 }
-): GraphSearchResult<T> {
-    val initialToVisit = listOf(ScoredVertex(start, 0, 0))
-    val seenPoints = shortestPathToAll(initialToVisit, neighbours, cost)
-    return GraphSearchResult(setOf(start), null, seenPoints)
-}
-
-fun <T> shortestPathToAllFromAny(
-    start: Map<T, Int>,
-    neighbours: NeighbourFunction<T>,
-    cost: CostFunction<T> = { _, _ -> 1 },
-): GraphSearchResult<T> {
-    val initialToVisit = start.map { (T, v) -> ScoredVertex(T, v, 0) }
-    val seenPoints = shortestPathToAll(initialToVisit, neighbours, cost)
-    return GraphSearchResult(start.keys, null, seenPoints)
-}
-
-private fun <T> shortestPathToAll(
-    initialToVisit: List<ScoredVertex<T>>,
-    neighbours: NeighbourFunction<T>,
-    cost: CostFunction<T>
-): MutableMap<T, SeenVertex<T>> {
-    val toVisit = PriorityQueue(initialToVisit)
-    val seenPoints: MutableMap<T, SeenVertex<T>> =
-        initialToVisit.associateTo(mutableMapOf()) { it.vertex to SeenVertex(it.score, null) }
-
-    while (toVisit.isNotEmpty()) {
-        val (currentVertex, currentScore) = toVisit.remove()
-
-        val nextPoints = neighbours(currentVertex)
-            .filter { it !in seenPoints }
-            .map { next -> ScoredVertex(next, currentScore + cost(currentVertex, next), 0) }
-
-        toVisit.addAll(nextPoints)
-        seenPoints.putAll(nextPoints.associate { it.vertex to SeenVertex(it.score, currentVertex) })
-    }
-    return seenPoints
+    val starts = initialToVisit.mapTo(mutableSetOf()) { it.vertex }
+    return GraphSearchResult(starts, endVertex, seenPoints, possiblePaths)
 }
 
 class GraphSearchResult<T>(
