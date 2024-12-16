@@ -21,10 +21,10 @@ private fun shortestPath(text: String): GraphSearchResult<Vertex> {
     val start = map.indexOf('S')
     val end = map.indexOf('E')
     val direction = Direction.EAST
-    val graphSearchResult = findShortestPathByPredicate(
+    return findShortestPathByPredicate(
         start to direction,
-        { (p, _) -> p == end },
-        { (p, d) ->
+        endPredicate = { (p, _) -> p == end },
+        neighbours = { (p, d) ->
             buildSet {
                 val next = p + d.point
                 if (next in map && map[next] != '#') {
@@ -34,54 +34,23 @@ private fun shortestPath(text: String): GraphSearchResult<Vertex> {
                 add(p to d.left)
             }
         },
-        { (p1, d1), (p2, d2) ->
-            if (p1 == p2) 1000 else 1
-        }
+        cost = { (p1, _), (p2, _) -> if (p1 == p2) 1000 else 1 },
+        heuristic = { (p, _) -> p.manhattanDistance(end) }
     )
-    return graphSearchResult
 }
-
 
 fun solveB(text: String, debug: Debug = Debug.Disabled): Int {
-    val map = text.lines()
-    val start = map.indexOf('S')
-    val end = map.indexOf('E')
-    val graphSearchResult = shortestPath(text)
-    val maxCost = graphSearchResult.getScore()
-    val cache = graphSearchResult.vertices.mapValuesTo(mutableMapOf()) { maxCost - it.value.cost }
-    return graphDfs(map, start to Direction.EAST, end, emptySet(), maxCost, cache).size
+    val searchResult = shortestPath(text)
+
+    return unpackPossiblePaths(searchResult.end(), searchResult.possiblePaths).size
 }
 
-fun graphDfs(
-    map: List<String>,
-    current: Vertex,
-    end: Point,
-    path: Set<Vertex>,
-    remainingBudget: Int,
-    cache: MutableMap<Vertex, Int>
-): Set<Point> {
-    val seen = cache[current]
-    return if (remainingBudget == 0) {
-        if (current.first == end) {
-            path.mapTo(mutableSetOf(current.first)) { p -> p.first }
-        } else {
-            emptySet()
-        }
-    } else if (remainingBudget < 0 || seen != null && remainingBudget < seen) {
-        emptySet()
-    } else {
-        cache[current] = remainingBudget
-        val neighbours = buildSet {
-            val next = current.first + current.second.point
-            if (next in map && map[next] != '#') {
-                add((next to current.second) to 1)
-            }
-            add((current.first to current.second.right) to 1000)
-            add((current.first to current.second.left) to 1000)
-        }.filter { it.first !in path }
-
-        neighbours.flatMapTo(mutableSetOf()) { (v, s) ->
-            graphDfs(map, v, end, path + current, remainingBudget - s, cache)
+fun unpackPossiblePaths(end: Vertex, possiblePrevious: Map<Vertex, Set<Vertex>>): Set<Point> {
+    return buildSet {
+        add(end.first)
+        val prev = possiblePrevious[end] ?: emptySet()
+        prev.flatMapTo(this) {
+            unpackPossiblePaths(it, possiblePrevious)
         }
     }
 }
