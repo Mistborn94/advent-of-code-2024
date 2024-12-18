@@ -1,7 +1,6 @@
 package day17
 
 import helper.Debug
-import helper.pow
 
 fun solveA(text: String, debug: Debug = Debug.Disabled): String {
     val (outputs, _) = runProgram(text, debug)
@@ -29,8 +28,8 @@ fun runProgram(
         println("Registers: $registers")
     }
     var a = registers['A']!!
-    var b = registers['B'] ?: 0
-    var c = registers['C'] ?: 0
+    var b = registers['B']!!
+    var c = registers['C']!!
     while (instructionPointer < program.size) {
         val opCode = program[instructionPointer]
         val operand = program[instructionPointer + 1]
@@ -41,13 +40,11 @@ fun runProgram(
         when (opCode) {
             //adv
             0 -> {
-                val numerator = a
                 val comboOperand = comboOperand(operand, a, b, c)
-                val denominator = 2.pow(comboOperand)
                 debug {
-                    println("   adv $numerator / (2 ^ $comboOperand)")
+                    println("   adv $a >> $comboOperand")
                 }
-                a = numerator / denominator
+                a = a.shr(comboOperand)
                 instructionPointer += 2
             }
             //bxl
@@ -101,22 +98,20 @@ fun runProgram(
             }
             //bdv
             6 -> {
-                val numerator = a
-                val denominator = 2.pow(comboOperand(operand, a, b, c))
+                val comboOperand = comboOperand(operand, a, b, c)
                 debug {
-                    println("   bdv $numerator / $denominator")
+                    println("   bdv $a >> $comboOperand")
                 }
-                b = numerator / denominator
+                b = a.shr(comboOperand)
                 instructionPointer += 2
             }
             //cdv
             7 -> {
-                val numerator = a
-                val denominator = 2.pow(comboOperand(operand, a, b, c))
+                val comboOperand = comboOperand(operand, a, b, c)
                 debug {
-                    println("   cdv $numerator / $denominator")
+                    println("   cdv $a >> $comboOperand")
                 }
-                c = numerator / denominator
+                c = a.shr(comboOperand)
                 instructionPointer += 2
             }
         }
