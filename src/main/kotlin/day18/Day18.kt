@@ -3,6 +3,7 @@ package day18
 import helper.Debug
 import helper.graph.findShortestPathByPredicate
 import helper.point.base.Point
+import kotlin.math.max
 
 fun solveA(text: String, debug: Debug = Debug.Disabled, endIndex: Int = 70, simDuration: Int = 1024): Int {
     val start = Point(0, 0)
@@ -38,16 +39,24 @@ fun solveB(text: String, debug: Debug = Debug.Disabled, endIndex: Int = 70): Str
     val coordinateRange = 0..endIndex
     val corrupted = parseInput(text)
 
-    var i = 0
-    while (i < corrupted.size) {
-        val currentCorrupted = corrupted.take(i + 1).toSet()
+    var currentDiff = corrupted.size
+    var highestPass = 0
+    var lowestFail = corrupted.size
+    var currentDuration = corrupted.size
+
+    while ((lowestFail - highestPass) > 1) {
+        val currentCorrupted = corrupted.take(currentDuration).toSet()
         val result = walk(start, end, currentCorrupted, coordinateRange)
 
+        currentDiff = max(1, currentDiff / 2)
         if (result.end == null) {
-            break;
+            lowestFail = currentDuration
+            currentDuration -= currentDiff
+        } else {
+            highestPass = currentDuration
+            currentDuration += currentDiff
         }
-        i++
     }
 
-    return corrupted[i].let { "${it.x},${it.y}" }
+    return corrupted[lowestFail - 1].let { "${it.x},${it.y}" }
 }
