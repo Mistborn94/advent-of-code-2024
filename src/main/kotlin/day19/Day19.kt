@@ -6,17 +6,8 @@ fun solveA(text: String, debug: Debug = Debug.Disabled): Int {
     val (patterns, designs) = text.split("\n\n")
         .let { (first, second) -> first.split(", ") to second.lines() }
 
-    return designs.count { possible(patterns, it) }
+    return designs.count { possibleCount(patterns, it, mutableMapOf()) > 0 }
 }
-
-fun possible(patterns: List<String>, design: String): Boolean {
-    return if (design.isEmpty()) {
-        true
-    } else {
-        patterns.any { pattern -> design.startsWith(pattern) && possible(patterns, design.drop(pattern.length)) }
-    }
-}
-
 
 fun solveB(text: String, debug: Debug = Debug.Disabled): Long {
     val (patterns, designs) = text.split("\n\n")
