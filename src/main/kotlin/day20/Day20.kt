@@ -15,16 +15,16 @@ private fun solve(text: String, timeSavedGoal: Int, cheatLength: Int): Int {
     val start = map.indexOf('S')
     val end = map.indexOf('E')
 
-    val shortestPath =
+    val pathScores =
         shortestPathToAll(start, neighbours = { it.neighbours().filter { n -> n in map && map[n] != '#' } })
-    val path = shortestPath.getPath(end)
+    val path = pathScores.getPath(end)
 
     return path.withIndex().sumOf { (index, cheatStart) ->
-        path.drop(index + 1).count { cheatEnd ->
+        path.subList(index + 1, path.size).count { cheatEnd ->
             val distance = (cheatEnd - cheatStart).abs()
 
             distance <= cheatLength
-                    && shortestPath.getScore(cheatEnd) - index - distance >= timeSavedGoal
+                    && pathScores.getScore(cheatEnd) - index - distance >= timeSavedGoal
         }
     }
 }
