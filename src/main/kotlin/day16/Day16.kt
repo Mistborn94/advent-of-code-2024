@@ -35,7 +35,7 @@ private fun shortestPath(text: String): GraphSearchResult<Vertex> {
             }
         },
         cost = { (p1, _), (p2, _) -> if (p1 == p2) 1000 else 1 },
-        heuristic = { (p, _) -> p.manhattanDistance(end) }
+        heuristic = { (p, _) -> (p - end).abs() }
     )
 }
 

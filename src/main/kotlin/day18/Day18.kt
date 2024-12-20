@@ -23,7 +23,7 @@ private fun walk(
     start,
     { it == end },
     { it.neighbours().filter { n -> n !in corrupted && n.x in coordinateRange && n.y in coordinateRange } },
-    heuristic = { it.manhattanDistance(end) }
+    heuristic = { (it - end).abs() }
 )
 
 private fun parseInput(text: String): List<Point> {
