@@ -1,7 +1,7 @@
 package day18
 
 import helper.Debug
-import helper.graph.findShortestPathByPredicate
+import helper.graph.shortestPath
 import helper.point.base.Point
 import kotlin.math.max
 
@@ -19,7 +19,7 @@ private fun walk(
     end: Point,
     corrupted: Set<Point>,
     coordinateRange: IntRange
-) = findShortestPathByPredicate(
+) = shortestPath(
     start,
     { it == end },
     { it.neighbours().filter { n -> n !in corrupted && n.x in coordinateRange && n.y in coordinateRange } },

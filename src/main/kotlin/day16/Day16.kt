@@ -2,7 +2,7 @@ package day16
 
 import helper.Debug
 import helper.graph.GraphSearchResult
-import helper.graph.findShortestPathByPredicate
+import helper.graph.shortestPath
 import helper.point.Direction
 import helper.point.base.Point
 import helper.point.base.contains
@@ -21,7 +21,7 @@ private fun shortestPath(text: String): GraphSearchResult<Vertex> {
     val start = map.indexOf('S')
     val end = map.indexOf('E')
     val direction = Direction.EAST
-    return findShortestPathByPredicate(
+    return shortestPath(
         start to direction,
         endPredicate = { (p, _) -> p == end },
         neighbours = { (p, d) ->

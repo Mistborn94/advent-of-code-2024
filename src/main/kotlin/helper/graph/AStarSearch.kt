@@ -2,7 +2,6 @@ package helper.graph
 
 import java.util.*
 
-typealias NeighbourAndCostFunction<T> = (T) -> Iterable<Pair<T, Int>>
 typealias NeighbourFunction<T> = (T) -> Iterable<T>
 typealias CostFunction<T> = (T, T) -> Int
 typealias HeuristicFunction<T> = (T) -> Int
@@ -10,7 +9,7 @@ typealias HeuristicFunction<T> = (T) -> Int
 /**
  * Implements A* search to find the shortest path between two vertices
  */
-fun <T> findShortestPathByPredicate(
+fun <T> shortestPath(
     start: T,
     endPredicate: (T) -> Boolean,
     neighbours: NeighbourFunction<T>,
@@ -20,7 +19,7 @@ fun <T> findShortestPathByPredicate(
     shortestPath(listOf(ScoredVertex(start, 0, heuristic(start))), endPredicate, neighbours, cost, heuristic)
 
 /**
- * Implements dijkstra to get the shortest path from a starting vertex to all reachable vertices
+ * Implements Dijkstra's algorithm to get the shortest path from a starting vertex to all reachable vertices
  */
 fun <T> shortestPathToAll(
     start: T,
@@ -32,7 +31,8 @@ fun <T> shortestPathToAllFromMultiple(
     start: Map<T, Int>,
     neighbours: NeighbourFunction<T>,
     cost: CostFunction<T> = { _, _ -> 1 },
-): GraphSearchResult<T> = shortestPath(start.map { (k, v) -> ScoredVertex(k, v, 0) }, { false }, neighbours, cost)
+): GraphSearchResult<T> =
+    shortestPath(start.map { (k, v) -> ScoredVertex(k, v, 0) }, { false }, neighbours, cost)
 
 /**
  * Actual shortest path implementation
@@ -75,8 +75,9 @@ private fun <T> shortestPath(
 class GraphSearchResult<T>(
     val start: Set<T>,
     val end: T?,
+    //Maps vertices to costs and previous vertices
     val vertices: Map<T, SeenVertex<T>>,
-    //Maps vertex to all possible vertices nodes that still results in the shortest path
+    //Maps vertex to all possible previous vertices that still results in a shortest path
     val possiblePaths: Map<T, Set<T>> = emptyMap()
 ) {
 
