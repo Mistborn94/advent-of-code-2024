@@ -73,7 +73,6 @@ internal class Day22KtTest {
 
         val solveB = solveB(lines)
         println("B: $solveB")
-        //not 2121
         assertEquals(1986, solveB)
     }
 }
