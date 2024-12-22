@@ -24,7 +24,8 @@ fun solveA(text: String, debug: Debug = Debug.Disabled) = text.lines()
 fun solveB(text: String, debug: Debug = Debug.Disabled): Int {
     val (bestSequence, bestValue) = text.lines().asSequence()
         .flatMap { sequenceB(it.toLong()).distinctBy { (d, _) -> d } }
-        .groupingBy { (d, _) -> d }.fold(
+        .groupingBy { (d, _) -> d }
+        .fold(
             initialValueSelector = { _, _ -> 0 },
             operation = { _, acc, (_, count) -> acc + count }
         ).maxBy { it.value }
