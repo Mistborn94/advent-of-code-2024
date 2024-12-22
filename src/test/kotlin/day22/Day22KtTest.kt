@@ -49,7 +49,7 @@ internal class Day22KtTest {
             7753432
             5908254""".trimIndent()
         val expectedA = expectedSequence.lines().map { it.toLong() }
-        assertEquals(expectedA, sequenceA(123L).drop(1).take(10).toList())
+        assertEquals(expectedA, sequenceA(123).drop(1).take(10).toList())
 
         val expectedB = listOf(
             listOf(-3, 6, -1, -1) to 4,
@@ -60,7 +60,7 @@ internal class Day22KtTest {
             listOf(2, -2, 0, -2) to 2,
         )
 
-        assertEquals(expectedB, sequenceB(123L).take(6).toList())
+        assertEquals(expectedB, sequenceB(123).take(6).toList())
     }
 
     @Test

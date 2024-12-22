@@ -14,7 +14,7 @@ fun sequenceA(start: Long) = generateSequence(start) { current ->
 }.take(2001)
 
 fun sequenceB(start: Long): Sequence<Pair<List<Int>, Int>> = sequenceA(start)
-    .map { "$it".last().digitToInt() }
+    .map { it.toInt() % 10 }
     .zipWithNext { a, b -> b to (b - a) }
     .windowed(4) { list -> list.map { it.second } to list.last().first }
 
