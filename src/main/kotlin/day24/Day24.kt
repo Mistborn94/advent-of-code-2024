@@ -158,7 +158,7 @@ private fun findSwap(
         if (sum2 == null) {
             val sum2GateByOutput = gates.first { it.output == z }
             debug {
-                println("Sum 2: $intermediate1 XOR $intermediate2 not found. Problem with $intermediate1 or $intermediate2")
+                println("Found problem: [$intermediate1 XOR $intermediate2] not found.")
                 println("Correct gate: $sum2GateByOutput")
             }
             val correctInputs = setOf(sum2GateByOutput.input1, sum2GateByOutput.input2)

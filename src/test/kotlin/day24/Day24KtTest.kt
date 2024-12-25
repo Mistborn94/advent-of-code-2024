@@ -93,7 +93,7 @@ internal class Day24KtTest {
         println("A: $solveA")
         assertEquals(46463754151024, solveA)
 
-        val solveB = solveB(lines)
+        val solveB = solveB(lines, Debug.Enabled)
         println("B: $solveB")
         assertEquals("cqk,fph,gds,jrs,wrk,z15,z21,z34", solveB)
     }
